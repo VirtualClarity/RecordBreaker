@@ -34,23 +34,29 @@
 	</properties>
 
 	<repositories>
-    <repository>
-      <id>scala-tools.org</id>
-      <name>Scala-tools Maven2 Repository</name>
-      <url>https://oss.sonatype.org/content/groups/scala-tools/</url>
-    </repository>
-    <repository>
-      <id>mvnrepository.com</id>
-      <name>MVN Repository</name>
-      <url>http://mvnrepository.com/artifact</url>
-    </repository>
+	    <repository>
+	      <id>scala-tools.org</id>
+	      <name>Scala-tools Maven2 Repository</name>
+	      <url>http://scala-tools.org/repo-releases</url>
+	    </repository>
+	    <repository>
+	      <id>mvnrepository.com</id>
+	      <name>MVN Repository</name>
+	      <url>http://mvnrepository.com/artifact</url>
+	    </repository>
 		<repository>
 			<id>DataNucleus_Repo</id>
 			<name>DataNucleus Repository</name>
 			<url>http://www.datanucleus.org/downloads/maven2</url>
 		</repository>
 	</repositories>
-    
+	  <pluginRepositories>
+	    <pluginRepository>
+	      <id>scala-tools.org</id>
+	      <name>Scala-tools Maven2 Repository</name>
+	      <url>http://scala-tools.org/repo-releases</url>
+	    </pluginRepository>
+	  </pluginRepositories>  
 	<dependencies>
 		<dependency>
 			<groupId>com.almworks.sqlite4java</groupId>
