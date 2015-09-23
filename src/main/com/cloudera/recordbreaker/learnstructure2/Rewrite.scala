@@ -12,7 +12,7 @@
  * the specific language governing permissions and limitations under the
  * License.
  */
-package com.cloudera.recordbreaker.learnstructure2;
+package com.cloudera.recordbreaker.learnstructure2.test;
 
 import scala.io.Source
 import scala.math._

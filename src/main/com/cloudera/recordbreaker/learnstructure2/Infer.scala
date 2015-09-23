@@ -12,12 +12,12 @@
  * the specific language governing permissions and limitations under the
  * License.
  */
-package com.cloudera.recordbreaker.learnstructure2;
+package com.cloudera.recordbreaker.learnstructure2.test;
 
 import scala.io.Source
 import scala.math._
 import scala.collection.mutable._
-import com.cloudera.recordbreaker.learnstructure2.RBTypes._
+import com.cloudera.recordbreaker.learnstructure2.test.RBTypes._
 
 case class CustomException(smth:String) extends Exception(smth)
 

@@ -214,7 +214,7 @@
           <launchers>
             <launcher>
               <id>main</id>
-              <mainClass>com.cloudera.recordbreaker.learnstructure2.Processor</mainClass>
+              <mainClass>com.cloudera.recordbreaker.learnstructure2.test.Processor</mainClass>
               <args>
                 <arg>${basedir}</arg>
               </args>
