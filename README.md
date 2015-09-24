@@ -1,6 +1,10 @@
 RecordBreaker - Automatically learn Avro structures from your data
 ========================================================================================
 
+Preface
+-------
+This repository is Virtual Clarity's fork of RecordBreaker. Cloudera seem not to have done anything with RecordBreaker in the last 12 months. We forked the repository to get a successful build for internal use. The commits you will see in this repository are currently just enough to get the build working on an up-to-date Eclipse/m2e installation. The tests as provided by Cloudera do not currently pass, and are thus skipped in the instructions below. You have been warned - there probably are bugs.
+
 Introduction
 ----------------------------------------------------------------------------------------
 RecordBreaker is a project that automatically turns your text-formatted data (server logs, sensor readings, etc) into structured Avro data, without any need to write parsers or extractors.  Its goal is to dramatically reduce the time spent preparing data for analysis, enabling more time for the analysis itself.
@@ -30,11 +34,12 @@ about a target filesystem.
 
 Installation
 ----------------------------------------------------------------------------------------
-$ ant dist
+$ mvn compile
+$ mvn package -Dmaven.test.skip=true -DskipTests
 
 
 Dependencies
 ----------------------------------------------------------------------------------------
 -- Java JDK 1.6
--- Apache ant 1.8.2
+-- Apache Maven (some version)
 
