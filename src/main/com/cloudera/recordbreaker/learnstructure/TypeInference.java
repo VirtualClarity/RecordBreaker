@@ -99,7 +99,7 @@ public class TypeInference {
    * This is the core of the LearnPADS algorithm.
    */
   public static InferredType infer(List<List<Token.AbstractToken>> chunks) {
-    InferredType typeTree = discover(chunks);
+    InferredType typeTree = discover(chunks, true);
     typeTree = typeTree.hoistUnions();
     //typeTree.ensureParsability();
     return typeTree;
@@ -108,7 +108,7 @@ public class TypeInference {
   /**
    * The oracle() function attempts to predict the best type for the data given by 'chunks'.
    */
-  private static TypeProphecy oracle(List<List<Token.AbstractToken>> chunks) {
+  private static TypeProphecy oracle(List<List<Token.AbstractToken>> chunks, boolean allowUnion) {
     //////////////////////////////////////////////////////////////
     // Phase 1: Handling chunks that appear homogenous (at this meta-level, at least)
     //////////////////////////////////////////////////////////////
@@ -370,9 +370,16 @@ public class TypeInference {
         return new StructProphecy(structChunkList);
       } else {
         // It's a UNION.
+
+        if (!allowUnion) { 
+          //union is not allowed, then we force a baseProphecy of string token
+          return forceBaseProphecy(chunks);
+       }
+
         // A UnionProphecy requires a number of chunklists, one for each type profile
         //System.err.println("UNION-1");
         Map<String, List<List<Token.AbstractToken>>> unionMap = new HashMap<String, List<List<Token.AbstractToken>>>();
+        
         for (List<Token.AbstractToken> chunk: chunks) {
           StringBuffer curTypeProfile = new StringBuffer();
           StringBuffer curField = new StringBuffer();
@@ -513,6 +520,12 @@ public class TypeInference {
         //System.err.println("UNION-2");
         //
         // Well OK, so it's not an ARRAY.  It's none of the above: UNION.
+        
+        if (!allowUnion) { 
+          //union is not allowed, then we force a baseProphecy of string token
+          return forceBaseProphecy(chunks);
+        }
+        
         //
         // We need to partition the chunks somehow, so that later stages can make some kind of progress.
         // In the absence of anything better, we'll group chunks according to the first token in each chunk.
@@ -581,7 +594,7 @@ public class TypeInference {
 
   /**
    */
-  private static InferredType discover(List<List<Token.AbstractToken>> chunks) {
+  private static InferredType discover(List<List<Token.AbstractToken>> chunks, boolean allowUnion) {
     // Remove chunks that are empty.  These should never get passed-in
     for (Iterator<List<Token.AbstractToken>> it = chunks.iterator(); it.hasNext(); ) {
       List<Token.AbstractToken> chunk = it.next();
@@ -596,7 +609,7 @@ public class TypeInference {
     //
     // Type predictions from the oracle come in one of four flavors: Base, Struct, Array, or Union
     //
-    TypeProphecy typePrediction = oracle(chunks);
+    TypeProphecy typePrediction = oracle(chunks, allowUnion);
     if (typePrediction instanceof BaseProphecy) {
       BaseProphecy bp = (BaseProphecy) typePrediction;
       List<String> sampleStrs = new ArrayList<String>();
@@ -611,7 +624,7 @@ public class TypeInference {
       List<InferredType> structDataTypes = new ArrayList<InferredType>();
       int i = 0;
       for (List<List<Token.AbstractToken>> structElt: sp.getStructElts()) {
-        structDataTypes.add(discover(structElt));
+        structDataTypes.add(discover(structElt, allowUnion));
       }
       return new StructType(structDataTypes);
 
@@ -621,11 +634,11 @@ public class TypeInference {
 
       List<InferredType> structDataTypes = new ArrayList<InferredType>();
       if (ap.getFirst().size() > 0) {
-        structDataTypes.add(discover(ap.getFirst()));
+        structDataTypes.add(discover(ap.getFirst(), allowUnion));
       }
-      structDataTypes.add(new ArrayType(discover(ap.getBody())));
+      structDataTypes.add(new ArrayType(discover(ap.getBody(), allowUnion)));
       if (ap.getLast().size() > 0) {
-        structDataTypes.add(discover(ap.getLast()));
+        structDataTypes.add(discover(ap.getLast(), allowUnion));
       }
       return new StructType(structDataTypes);
 
@@ -634,11 +647,38 @@ public class TypeInference {
       List<InferredType> unionDataTypes = new ArrayList<InferredType>();
       
       for (List<List<Token.AbstractToken>> unionElt: up.getUnionElements()) {
-        unionDataTypes.add(discover(unionElt));
+        unionDataTypes.add(discover(unionElt, false)); //nested union not allowed
       }
       return new UnionType(unionDataTypes);
     }
     return null;
+  }
+
+  /**
+   * force a BaseProphecy by concating all tokens in a chunk into a string token.
+   */
+  private static TypeProphecy forceBaseProphecy(List<List<Token.AbstractToken>> chunks) {
+    //concatenate all tokens of a chunk back into a string token
+    List<Token.AbstractToken> samples = new ArrayList<Token.AbstractToken>();
+    int numSamples = 0;
+    Token.AbstractToken prizeToken = null;
+    for (List<Token.AbstractToken> curChunk: chunks) {
+      StringBuilder sb = new StringBuilder();
+      for (Token.AbstractToken tok: curChunk) {
+        sb.append(tok.getSampleString());
+      }
+      Token.AbstractToken sampleToken = new Token.StringToken(sb.toString());
+      samples.add(sampleToken);
+      if (prizeToken == null) {
+        prizeToken = sampleToken;
+      }
+      if (numSamples >= MAX_SAMPLES) {
+        numSamples++;
+        break;
+      }
+    }
+    return new BaseProphecy(prizeToken, samples);
+    
   }
 
   /////////////////////////////////////////////////////
