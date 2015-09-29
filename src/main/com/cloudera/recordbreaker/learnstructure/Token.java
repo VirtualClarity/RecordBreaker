@@ -42,7 +42,7 @@ public class Token {
   final static int WHITESPACE_TOKENCLASSID = 10;
   final static int NOOP_TOKENCLASSID = 11;
   
-  static abstract class AbstractToken {
+  public static abstract class AbstractToken {
     public static boolean hasData(int tokenClassIdentifier) {
     switch (tokenClassIdentifier) {
     case META_TOKENCLASSID:
