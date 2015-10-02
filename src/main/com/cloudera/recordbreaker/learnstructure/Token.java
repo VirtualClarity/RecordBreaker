@@ -483,14 +483,16 @@ public class Token {
   }
 
   static class WhitespaceToken extends AbstractToken {
-    public WhitespaceToken() {
+    String s;
+    public WhitespaceToken(String s) {
       super(WHITESPACE_TOKENCLASSID, null);
+      this.s = s;
     }
     public String toString() {
       return "WS()";
     }
     public String getSampleString() {
-      return toString();
+      return s;
     }
     public Object get() {
       return null;

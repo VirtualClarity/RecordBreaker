@@ -210,7 +210,7 @@ public class Tokenizer {
     case Token.WHITESPACE_TOKENCLASSID: {
       Matcher m = wsPattern.matcher(inputStr);
       if (m.lookingAt()) {
-        outputToks.add(new Token.WhitespaceToken());
+        outputToks.add(new Token.WhitespaceToken(m.group(1)));
         return cutChunk(m, inputStr);
       }
       return null;
@@ -434,7 +434,9 @@ public class Tokenizer {
 	{
 	    if(!Token.CharToken.class.isInstance(t) || ((Token.CharToken)t).getChar() != ',')
     	    {   // this is not a char		    OR  this is not a comma
-    	    	noCommaList.add(t);
+		// For CSV mode we need all the fields in a MetaToken to be collapsed into
+		// one appropriate primitive
+		noCommaList.add(collapseMetaToken((Token.MetaToken)t));
     	    }
 	}
 	toksSoFar = noCommaList;
@@ -443,7 +445,26 @@ public class Tokenizer {
     return toksSoFar;
   }
 
-  ///////////////////////////////////////////////////
+  // Takes a MetaToken and merges all the internal tokens into one appropriate primitive type,
+  // just intended for use when the line is from a CSV file.
+  private static AbstractToken collapseMetaToken(Token.MetaToken t)
+  {
+      List<AbstractToken> tokens = t.getMiddleChunk();
+
+      // If there's only one token, then no collapsing is required. Just extract the relevant
+      // token and return it unchanged.
+      if(tokens.size() == 1) { return tokens.get(0); }
+      
+      // In all other scenarios, our only choice of AVRO primitive is string.
+      StringBuilder b = new StringBuilder();
+      for(Token.AbstractToken token: tokens)
+      {
+	  b.append(token.getSampleString());
+      }
+      return new Token.StringToken(b.toString());
+  }
+
+///////////////////////////////////////////////////
   // main() tests the Tokenizer.
   ////////////////////////////////////////////////////
   public static void main(String argv[]) throws IOException {
