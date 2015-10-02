@@ -28,7 +28,10 @@ When a line is treated as a CSV the following occurs:
 When the tokenizer (sic) detects values are surrounded by things like quotes, it now assumes those enclosing characters are not part of the data and does not include them in the schema, whether or not the line is detected as being a CSV line. Which is nice.
 
 ### Single quoted fields
-are no longer records. When a single primitive is quoted, it now outputs that as a primitive rather than as a record, whether or not the line is detected as being a CSV line. Which is also nice.  
+are no longer records. When a single primitive is quoted, it now outputs that as a primitive rather than as a record, whether or not the line is detected as being a CSV line. Which is also nice. 
+
+### Numbers with leading zeroes treated as strings
+This is so that telephone numbers don't have their leading zeroes removed.
 
 Introduction
 ----------------------------------------------------------------------------------------

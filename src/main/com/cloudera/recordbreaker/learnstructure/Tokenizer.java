@@ -40,8 +40,10 @@ public class Tokenizer {
   static Pattern permissionBitPattern = Pattern.compile("([drwx-]{9,})");
   static Pattern timePattern1 = Pattern.compile("(\\d\\d):(\\d\\d):(\\d\\d)");
   static Pattern timePattern2 = Pattern.compile("(\\d\\d):(\\d\\d)");
-  static Pattern intPattern = Pattern.compile("([-+]?\\d+)");
-  static Pattern intRangePattern = Pattern.compile("(\\d+)-(\\d+)");
+  //static Pattern intPattern = Pattern.compile("([-+]?\\d+)");		
+  static Pattern intPattern = Pattern.compile("([-+]?[1-9][0-9]*)");			// updated to not match leading zeroes
+  //static Pattern intRangePattern = Pattern.compile("(\\d+)-(\\d+)");
+  static Pattern intRangePattern = Pattern.compile("([1-9][0-9]+)-([1-9][0-9]+)");	// updated to not match leading zeroes
   static Pattern floatPattern = Pattern.compile("([+-]?\\d*\\.\\d+)");
   static Pattern floatRangePattern = Pattern.compile("(\\d*\\.\\d+)-(\\d*\\.\\d+)");
   static Pattern stringPattern = Pattern.compile("((?:[\\S&&[^\\\"\\,\\;\\|\\[\\]\\{\\}\\<\\>\\(\\)\\']]){2,})");
