@@ -144,16 +144,7 @@ public class TypeInference {
       Token.AbstractToken prizeToken = chunks.get(0).get(0);
       if (! (prizeToken instanceof Token.MetaToken)) {
         // If it's not a MetaToken, then it's easy: we prophesy a data column consisting of a single basic type
-        List<Token.AbstractToken> samples = new ArrayList<Token.AbstractToken>();
-        int numSamples = 0;
-        for (List<Token.AbstractToken> curChunk: chunks) {
-          samples.add(curChunk.get(0));
-          numSamples++;
-          if (numSamples >= MAX_SAMPLES) {
-            break;
-          }
-        }
-        return new BaseProphecy(prizeToken, samples);
+        return new BaseProphecy(prizeToken, getSamples(chunks));
       } else {
         //System.err.println("STRUCT-1");
         //
@@ -180,10 +171,22 @@ public class TypeInference {
         endChunk.add(mtok.getEndToken());
         endChunkList.add(endChunk);
 
+        // Is this really a base type masquerading as a struct as a result of the "complements"?
+        if(middleChunkList.size() == 1)
+        {
+            List<Token.AbstractToken> innerList = middleChunkList.get(0);
+            if(innerList.size() == 1)
+            {
+        	return new BaseProphecy(innerList.get(0), getSamples(chunks));
+            }
+        }
+        
         List<List<List<Token.AbstractToken>>> structElts = new ArrayList<List<List<Token.AbstractToken>>>();
-        structElts.add(startChunkList);
-        structElts.add(middleChunkList);
-        structElts.add(endChunkList);
+        //structElts.add(startChunkList);	// if you include these, the quotes or brackets or whatever
+        					// "complements" the tokenizer identified get included as
+        					// fields in the output schema
+        structElts.add(middleChunkList);		// <- this is the one with real data
+        //structElts.add(endChunkList);		// so I've disabled them.
         return new StructProphecy(structElts);
       }
     }
@@ -681,6 +684,30 @@ public class TypeInference {
     
   }
 
+  // Returns a list of samples from chunks
+  static List<Token.AbstractToken> getSamples(List<List<Token.AbstractToken>> chunks)
+  {
+      List<Token.AbstractToken> samples = new ArrayList<Token.AbstractToken>();
+      int numSamples = 0;
+      for (List<Token.AbstractToken> curChunk: chunks)
+      {
+	  Token.AbstractToken firstToken = curChunk.get(0);
+	if(Token.MetaToken.class.isInstance(firstToken))
+	{
+	    samples.add(((Token.MetaToken)firstToken).getMiddleChunk().get(0));
+	}
+	else
+	{
+	    samples.add(firstToken);
+	}
+        numSamples++;
+        if (numSamples >= MAX_SAMPLES) {
+          break;
+        }
+      }
+      return samples;
+  }
+  
   /////////////////////////////////////////////////////
   // main() tests the TypeInference mechanism
   /////////////////////////////////////////////////////

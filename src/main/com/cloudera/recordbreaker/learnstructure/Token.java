@@ -174,7 +174,7 @@ public class Token {
     public abstract String getSampleString();
   }
 
-  static class MetaToken extends AbstractToken {
+  public static class MetaToken extends AbstractToken {
     CharToken start;
     CharToken end;
     List<AbstractToken> contents;
