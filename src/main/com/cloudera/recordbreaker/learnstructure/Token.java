@@ -220,7 +220,7 @@ public class Token {
     }
   }
 
-  static class CharToken extends AbstractToken {
+  public static class CharToken extends AbstractToken {
     char c;
     public CharToken(char c) {
       super(CHAR_TOKENCLASSID, "" + c);

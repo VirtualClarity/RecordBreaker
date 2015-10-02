@@ -18,6 +18,8 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
+import com.cloudera.recordbreaker.learnstructure.Token.AbstractToken;
+
 /*********************************************************
  * Tokenizer transforms a line of text into a set of Token objects.
  * Each Token is one of a handful of classes.
@@ -271,12 +273,18 @@ public class Tokenizer {
     }
   }
 
-
+  /**
+   *	Added by VC to allow detection of CSV. Preserves the original call without inMetaToken 
+   */
+  static public List<Token.AbstractToken> tokenize(String s) throws IOException {
+      return tokenize(s, false);
+  }
+  
   /**
    * Accepts a single line of input, returns all the tokens for that line.
    * If the line cannot be parsed, we return null.
    */
-  static public List<Token.AbstractToken> tokenize(String s) throws IOException {
+  static public List<Token.AbstractToken> tokenize(String s, boolean inMetaToken) throws IOException {
     String curS = s;
     List<Token.AbstractToken> toksSoFar = new ArrayList<Token.AbstractToken>();
 
@@ -290,7 +298,7 @@ public class Tokenizer {
         String closeChar = complements.get("" + startChar);
         int closeIndex = curS.indexOf(closeChar, 1);
         if (closeIndex >= 0) {
-          toksSoFar.add(new Token.MetaToken(new Token.CharToken(curS.charAt(0)), new Token.CharToken(closeChar.charAt(0)), tokenize(curS.substring(1, closeIndex))));
+          toksSoFar.add(new Token.MetaToken(new Token.CharToken(curS.charAt(0)), new Token.CharToken(closeChar.charAt(0)), tokenize(curS.substring(1, closeIndex), true)));
           curS = curS.substring(closeIndex+1);
           continue;
         }
@@ -397,6 +405,41 @@ public class Tokenizer {
       // If execution reaches this point, it means no pattern applied, which means the line cannot be parsed.
       return null;
     }
+    
+    if(inMetaToken) { return toksSoFar; }
+
+    // CSV SPECIAL CASE
+    // Tokenisation has finished. Look for a potential CSV pattern and remove the commas if found
+    // If we find more than one token which is a CharToken and consists of a , this 
+    // line is probably from a CSV file
+    int commaCount = 0;
+    for(AbstractToken t: toksSoFar)
+    {
+	if(Token.CharToken.class.isInstance(t) && ((Token.CharToken)t).getChar() == ',')
+        {   // the token is a single comma
+            commaCount++;
+        }
+    }
+    boolean isCSV = commaCount > 1 ? true : false;	// There are multiple sole commas
+    if(commaCount == 1 && toksSoFar.size() == 3)
+    {   // There is one sole comma but there are only three tokens overall so it's a two field CSV
+        isCSV = true;
+    }
+    // TODO what if there are empty columns resulting in multiple commas together? They might come through
+    // as strings and thus not be detected by this routine
+    if(isCSV)
+    {
+	ArrayList<AbstractToken> noCommaList = new ArrayList<AbstractToken>();
+	for(AbstractToken t: toksSoFar)
+	{
+	    if(!Token.CharToken.class.isInstance(t) || ((Token.CharToken)t).getChar() != ',')
+    	    {   // this is not a char		    OR  this is not a comma
+    	    	noCommaList.add(t);
+    	    }
+	}
+	toksSoFar = noCommaList;
+    }
+    	
     return toksSoFar;
   }
 
