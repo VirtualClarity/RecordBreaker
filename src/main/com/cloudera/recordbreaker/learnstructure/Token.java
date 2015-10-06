@@ -44,8 +44,9 @@ public class Token {
   
   public static abstract class AbstractToken {
     int originalClassId;	// When the inferred type gets hidden, we will store it in here so it can be got back later
-    			// to be included in the doc string. Maybe it will help us later when trying to infer the type again
-    			// elsewhere in the system
+    				// to be included in the doc string. Maybe it will help us later when trying to infer the type again
+    				// elsewhere in the system
+    boolean nullable = false;	// Whether or not null should be allowed in place of this token
     public static boolean hasData(int tokenClassIdentifier) {
     switch (tokenClassIdentifier) {
     case META_TOKENCLASSID:
@@ -108,16 +109,19 @@ public class Token {
       return null;
     }
     }
-    public static Schema createAvroSchema(int tokenClassIdentifier, String tokenParameter, String fieldName) {
+    public static Schema createAvroSchema(int tokenClassIdentifier, String tokenParameter, String fieldName, boolean nullable) {
+	ArrayList<Schema> nullUnion = new ArrayList<Schema>();
+	nullUnion.add(Schema.create(Schema.Type.NULL));
     switch (tokenClassIdentifier) {
     case META_TOKENCLASSID:
       return null;
-    case CHAR_TOKENCLASSID:
-      return Schema.create(Schema.Type.STRING);
-    case IPADDR_TOKENCLASSID:
-      return Schema.create(Schema.Type.STRING);
-    case PERMISSIONS_TOKENCLASSID:
-      return Schema.create(Schema.Type.STRING);
+    case CHAR_TOKENCLASSID: case IPADDR_TOKENCLASSID: case PERMISSIONS_TOKENCLASSID: case STRING_TOKENCLASSID:
+	if(nullable)
+	{
+	    nullUnion.add(Schema.create(Schema.Type.STRING));
+	    return Schema.createUnion(nullUnion);
+	}
+	return Schema.create(Schema.Type.STRING);
     case DATE_TOKENCLASSID: {
       Schema s = Schema.createRecord(fieldName, "", "", false);
       List<Schema.Field> fields = new ArrayList<Schema.Field>();
@@ -140,8 +144,6 @@ public class Token {
       return Schema.create(Schema.Type.INT);
     case FLOAT_TOKENCLASSID:
       return Schema.create(Schema.Type.DOUBLE);
-    case STRING_TOKENCLASSID:
-      return Schema.create(Schema.Type.STRING);
     case EOL_TOKENCLASSID:
       return null;
     case WHITESPACE_TOKENCLASSID:

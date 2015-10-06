@@ -189,6 +189,7 @@ class BaseType extends InferredType {
   String tokenParameter;
   Schema schema = null;
   List<String> sampleStrs = null;
+  boolean nullable = false;
 
   static int fieldCounter = 0;
   public BaseType() {
@@ -200,12 +201,14 @@ class BaseType extends InferredType {
     this.sampleStrs = sampleStrs;
     this.tokenClassIdentifier = token.originalClassId;
     this.tokenParameter = token.getParameter();
+    this.nullable = token.nullable;
     this.schema = computeAvroSchema();
   }
-  public BaseType(int tokenClassIdentifier, List<String> sampleStrs, String tokenParameter) {
+  public BaseType(int tokenClassIdentifier, List<String> sampleStrs, String tokenParameter, boolean nullable) {
     this.sampleStrs = sampleStrs;
     this.tokenClassIdentifier = tokenClassIdentifier;
     this.tokenParameter = tokenParameter;
+    this.nullable = nullable;
     this.schema = computeAvroSchema();
   }
   public InferredType hoistUnions() {
@@ -217,11 +220,11 @@ class BaseType extends InferredType {
     return toReturn;
   }
   InferredType duplicate() {
-    return new BaseType(tokenClassIdentifier, sampleStrs, tokenParameter);
+    return new BaseType(tokenClassIdentifier, sampleStrs, tokenParameter, nullable);
   }
 
   Schema computeAvroSchema() {
-    return Token.AbstractToken.createAvroSchema(tokenClassIdentifier, tokenParameter, name);
+    return Token.AbstractToken.createAvroSchema(tokenClassIdentifier, tokenParameter, name, nullable);
   }
   public Schema getAvroSchema() {
     return schema;

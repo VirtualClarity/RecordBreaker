@@ -43,6 +43,9 @@ The doc field for each schema field is now a JSON string containing multiple ite
 ### Treat everything as a string
 We've added a flag to Tokenize to allow you to specify that it should output everything as a string. This only works when CSV mode has been detected. Default behaviour is unchanged. When everything is a string, the type that was inferred is output in the doc field, as a hint for later converting it to the correct type.
 
+### Set null as a possible value for every field
+We've added a flag to Tokenize to allow you to specify that it should every field as having null as a possible type. This only works when CSV mode has been detected. Default behaviour is unchanged.
+
 Introduction
 ----------------------------------------------------------------------------------------
 RecordBreaker is a project that automatically turns your text-formatted data (server logs, sensor readings, etc) into structured Avro data, without any need to write parsers or extractors.  Its goal is to dramatically reduce the time spent preparing data for analysis, enabling more time for the analysis itself.

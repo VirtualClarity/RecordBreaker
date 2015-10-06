@@ -279,20 +279,20 @@ public class Tokenizer {
    *	Added by VC to allow detection of CSV. Preserves the original call without inMetaToken 
    */
   static public List<Token.AbstractToken> tokenize(String s) throws IOException {
-      return tokenize(s, false, false);
+      return tokenize(s, false, false, false);
   }
   
   /**
    *	Added by VC to allow handling of CSV lines all as strings 
    */
-  static public List<Token.AbstractToken> tokenize(String s, boolean hideType) throws IOException {
-      return tokenize(s, hideType, false);
+  static public List<Token.AbstractToken> tokenize(String s, boolean hideType, boolean nullable) throws IOException {
+      return tokenize(s, hideType, nullable, false);
   }
   /**
    * Accepts a single line of input, returns all the tokens for that line.
    * If the line cannot be parsed, we return null.
    */
-  static public List<Token.AbstractToken> tokenize(String s, boolean hideType, boolean inMetaToken) throws IOException {
+  static public List<Token.AbstractToken> tokenize(String s, boolean hideType, boolean nullable, boolean inMetaToken) throws IOException {
     String curS = s;
     List<Token.AbstractToken> toksSoFar = new ArrayList<Token.AbstractToken>();
 
@@ -437,6 +437,7 @@ public class Tokenizer {
     // as strings and thus not be detected by this routine
     if(isCSV)
     {
+	// Remove the commas from the token list
 	ArrayList<AbstractToken> noCommaList = new ArrayList<AbstractToken>();
 	for(AbstractToken t: toksSoFar)
 	{
@@ -448,6 +449,8 @@ public class Tokenizer {
     	    }
 	}
 	toksSoFar = noCommaList;
+	// If we have been instructed to output everything as a String (hideType), go through the list
+	// and convert to a string (whilst saving the original type for output in doc field)
 	if(hideType)
 	{
 		ArrayList<AbstractToken> allStringList = new ArrayList<AbstractToken>();
@@ -456,6 +459,14 @@ public class Tokenizer {
 		    allStringList.add(hideTokenType(t));
 		}
 		toksSoFar = allStringList;
+	}
+	// If we have been instructed to output everything as nullable, go through the list and set them all to nullable
+	if(nullable)
+	{
+		for(AbstractToken t: toksSoFar)
+		{
+		    t.nullable = true;
+		}
 	}
     }
     
