@@ -43,6 +43,9 @@ public class Token {
   final static int NOOP_TOKENCLASSID = 11;
   
   public static abstract class AbstractToken {
+    int originalClassId;	// When the inferred type gets hidden, we will store it in here so it can be got back later
+    			// to be included in the doc string. Maybe it will help us later when trying to infer the type again
+    			// elsewhere in the system
     public static boolean hasData(int tokenClassIdentifier) {
     switch (tokenClassIdentifier) {
     case META_TOKENCLASSID:
@@ -160,6 +163,7 @@ public class Token {
     public AbstractToken(int classId, String tokenParameter) {
       this.classId = classId;
       this.tokenParameter = tokenParameter;
+      this.originalClassId = classId;
     }
     public int getClassId() {
       return classId;

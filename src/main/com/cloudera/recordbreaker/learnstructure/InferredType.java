@@ -198,7 +198,7 @@ class BaseType extends InferredType {
   }
   public BaseType(Token.AbstractToken token, List<String> sampleStrs) {
     this.sampleStrs = sampleStrs;
-    this.tokenClassIdentifier = token.getClassId();
+    this.tokenClassIdentifier = token.originalClassId;
     this.tokenParameter = token.getParameter();
     this.schema = computeAvroSchema();
   }
@@ -228,7 +228,7 @@ class BaseType extends InferredType {
   }
   public String getDocString() {
     StringBuffer buf = new StringBuffer();
-    buf.append("Example data: ");
+    buf.append("{\"examples\": \"");
     for (Iterator<String> it = sampleStrs.iterator(); it.hasNext(); ) {
       String tokStr = it.next();
       buf.append("'" + tokStr + "'");
@@ -236,6 +236,7 @@ class BaseType extends InferredType {
         buf.append(", ");
       }
     }
+    buf.append("\", \"inferred_type\": \"" + Token.AbstractToken.getClassStr(tokenClassIdentifier) + "\"}");
     return buf.toString();
   }
   ParseResult internalParse(String s, Map<String, Integer> targetUnionDecisions, boolean mustConsumeStr) {

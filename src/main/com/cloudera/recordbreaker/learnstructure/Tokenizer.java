@@ -279,14 +279,20 @@ public class Tokenizer {
    *	Added by VC to allow detection of CSV. Preserves the original call without inMetaToken 
    */
   static public List<Token.AbstractToken> tokenize(String s) throws IOException {
-      return tokenize(s, false);
+      return tokenize(s, false, false);
   }
   
+  /**
+   *	Added by VC to allow handling of CSV lines all as strings 
+   */
+  static public List<Token.AbstractToken> tokenize(String s, boolean hideType) throws IOException {
+      return tokenize(s, hideType, false);
+  }
   /**
    * Accepts a single line of input, returns all the tokens for that line.
    * If the line cannot be parsed, we return null.
    */
-  static public List<Token.AbstractToken> tokenize(String s, boolean inMetaToken) throws IOException {
+  static public List<Token.AbstractToken> tokenize(String s, boolean hideType, boolean inMetaToken) throws IOException {
     String curS = s;
     List<Token.AbstractToken> toksSoFar = new ArrayList<Token.AbstractToken>();
 
@@ -300,7 +306,7 @@ public class Tokenizer {
         String closeChar = complements.get("" + startChar);
         int closeIndex = curS.indexOf(closeChar, 1);
         if (closeIndex >= 0) {
-          toksSoFar.add(new Token.MetaToken(new Token.CharToken(curS.charAt(0)), new Token.CharToken(closeChar.charAt(0)), tokenize(curS.substring(1, closeIndex), true)));
+          toksSoFar.add(new Token.MetaToken(new Token.CharToken(curS.charAt(0)), new Token.CharToken(closeChar.charAt(0)), tokenize(curS.substring(1, closeIndex), hideType, true)));
           curS = curS.substring(closeIndex+1);
           continue;
         }
@@ -442,12 +448,28 @@ public class Tokenizer {
     	    }
 	}
 	toksSoFar = noCommaList;
+	if(hideType)
+	{
+		ArrayList<AbstractToken> allStringList = new ArrayList<AbstractToken>();
+		for(AbstractToken t: toksSoFar)
+		{
+		    allStringList.add(hideTokenType(t));
+		}
+		toksSoFar = allStringList;
+	}
     }
-    	
+    
     return toksSoFar;
   }
 
-  // Takes a MetaToken and merges all the internal tokens into one appropriate primitive type,
+  private static AbstractToken hideTokenType(AbstractToken t)
+  {
+      Token.StringToken st = new Token.StringToken(t.getSampleString());
+      st.originalClassId = t.getClassId();
+      return st;
+  }
+
+// Takes a MetaToken and merges all the internal tokens into one appropriate primitive type,
   // just intended for use when the line is from a CSV file.
   private static AbstractToken collapseMetaToken(Token.MetaToken t)
   {
